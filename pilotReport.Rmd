@@ -1,0 +1,179 @@
+---
+title: "CARPS Reproducibility Report"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+---
+
+#### Article ID: [5-4-2015_PS]
+#### Pilot 1: [Benjamin deMayo]
+#### Co-pilot: [Katherine Hermann]
+#### Start date: [11/5/17]
+#### End date: [11/7/17]   
+
+-------
+
+#### Methods summary: 
+This is an analytic reproduction of Experiment 6 in Shah, Shafir & Mullainathan (2015) in Psychological Science. The authors were interested in the effect of scarcity on people's consistency of valuation judgments. In this study, participants played a game of Family Feud and were given either 75 s (budget - "poor" condition) or 250 s (budget - "rich" condition) to complete the game. After playing the game, participants were either primed to think about a small account of time necessary to play one round of the game (account -"small" condition) or a large account (their overall time budget to play the entire game, account - "large" condition.) Participants rated how costly it would feel to lose 10s of time to play the game. The researchers were primarily interested in an interaction between the between subjects factors of scarcity and account, hypothesizing that those in the budget - "poor" condition would be more consistent in their valuation of the 10s regardless of account in comparison with those in the budget - "rich" condition. The authors tested this hypothesis with a 2x2 between-subjects ANOVA.
+
+------
+
+#### Target outcomes: 
+"One participant was excluded because of a computer
+malfunction during the game. Time-rich participants
+rated the loss as more expensive when they thought
+about a small account (M = 8.31, 95% CI = [7.78, 8.84])
+than when they thought about a large account (M = 6.50,
+95% CI = [5.42, 7.58]), whereas time-poor participants’
+evaluations did not differ between the small-account
+condition (M = 8.33, 95% CI = [7.14, 9.52]) and the large account
+condition (M = 8.83, 95% CI = [7.97, 9.69]). A 2
+(scarcity condition) × 2 (account condition) analysis of
+variance revealed a significant interaction, F(1, 69) = 5.16,
+p < .05, ηp2 = .07." (Shah, Shafir & Mullainathan, 2015)
+------
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+## Step 1: Load packages
+
+```{r}
+library(tidyverse) # for data munging
+library(knitr) # for kable table formating
+library(haven) # import and export 'SPSS', 'Stata' and 'SAS' Files
+library(readxl) # import excel files
+library(CARPSreports) # custom report functions
+library(afex) #anova functions
+library(langcog) #95 percent confidence intervals
+```
+
+## Step 2: Load data
+
+```{r}
+data <- read_excel("data/study 6-accessible-feud.xlsx")
+```
+
+## Step 3: Tidy data
+The data are already tidy as provided by the authors.
+
+```{r}
+
+```
+
+## Step 4: Run analysis
+
+### Pre-processing
+
+
+```{r}
+#select the relevant data columns
+d1 <- data %>%
+  select(Subject, Cond, Slack, Large, expense) %>%
+  dplyr::rename(budget = Slack, account = Large)
+  
+
+#rename data entries to make them more descriptive
+d1$budget <- d1$budget %>%
+                    recode('0' = "poor", '1' = "rich")
+
+d1$account <- d1$account %>%
+                    recode('0' = "small", '1' = "large")
+
+d1$Cond <- d1$Cond %>%
+                    recode('0' = "poor_small",
+                           '2' = "poor_large",
+                           '1' = "rich_small",
+                           '3' = "rich_large")
+
+#Create new data frames based on condition for ease of computation
+##for poor_small condition
+poor_small <- d1 %>%
+  filter(Cond == "poor_small")
+
+##for poor_large condition
+poor_large <- d1 %>%
+  filter(Cond == "poor_large")
+
+##for rich_small condition
+rich_small <- d1 %>%
+  filter(Cond == "rich_small")
+
+
+##for rich_large condition
+rich_large <- d1 %>%
+  filter(Cond == "rich_large")
+        
+```
+
+### Descriptive statistics
+```{r}
+#Summary table of means and confidence intervals
+summary <- d1 %>%
+  group_by(Cond) %>%
+  multi_boot_standard(col = "expense")
+
+head(summary)
+
+compareValues(8.83, 8.947368)#Comparing the means in the poor_large condition
+
+compareValues(7.97, 8.046035)#lower 95% Confidence Interval Limit in the poor_large condition
+
+compareValues(9.69, 9.848702)#upper 95% Confidence Interval Limit in the poor_large condition
+    
+compareValues(5.42, 5.50)#lower 95% Confidence Interval Limit in the rich_large condition
+
+compareValues(7.58, 7.50)#upper 95% Confidence Interval Limit in the rich_large condition
+
+compareValues(7.14, 7.00)#lower 95% Confidence Interval Limit in the poor_small condition
+
+compareValues(9.52, 9.43)#upper 95% Confidence Interval Limit in the poor_small condition
+
+compareValues(7.78, 7.88)#lower 95% Confidence Interval Limit in the rich_small condition
+
+compareValues(8.84, 8.81)#upper 95% Confidence Interval Limit in the rich_small condition
+
+```
+
+### Inferential statistics
+
+```{r}
+
+t.test(poor_small$expense, poor_large$expense) #Testing: "Time-poor participants’ evaluations did not differ between the small-account condition and the large account condition." This test was not formally conducted in the paper, although the result mentioned in the paper is confirmed here.
+
+t.test(rich_small$expense, rich_large$expense) #Testing: "Time-rich participants rated the loss as more expensive when they thought about a small account than when they thought about a large account." This test was not formally conducted in the paper, although the result mentioned in the paper is confirmed here.
+
+#Main inferential analysis: a 2x2 ANOVA with 2 between subjects factors, account and budget
+aov_BudgetAccount <- aov_ez(id = "Subject", dv = "expense", data = d1, between = c("budget", "account"), anova_table = list(es = "pes"))
+summary(aov_BudgetAccount)
+
+compareValues(69, 70) #degrees of freedom
+compareValues(5.76, 5.16) #F-statistic
+compareValues(.07, .076079) #partial effect size
+
+```
+
+## Step 5: Conclusion
+
+[Include the carpsReport function below]
+
+```{r}
+carpsReport(Report_Type = "pilot", 
+            Article_ID = "5-4-2015_PS", 
+            Insufficient_Information_Errors = 1, 
+            Decision_Errors = 0, 
+            Major_Numerical_Errors = 2, 
+            Time_to_Complete = 240, 
+            Author_Assistance = FALSE)
+```
+
+This reproducibility check was a failure, as it contained two Major Numerical Errors, an Insufficient Information Error and numerous Minor Numerical Errors. The differences in means for the poor_large condition, as well as differences in numerical values obtained in the 2x2 ANOVA, are likely due to the exclusion of a participant which is mentioned in the paper, but not apparent from the raw data file. Differences in confidence intervals for all other conditions are unexplained.
+
+
+```{r session_info, include=TRUE, echo=TRUE, results='markup'}
+devtools::session_info()
+```
