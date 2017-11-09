@@ -171,7 +171,7 @@ carpsReport(Report_Type = "pilot",
             Author_Assistance = FALSE)
 ```
 
-This reproducibility check was a failure, as it contained two Major Numerical Errors, an Insufficient Information Error and numerous Minor Numerical Errors. The differences in means for the poor_large condition, as well as differences in numerical values obtained in the 2x2 ANOVA, are likely due to the exclusion of a participant which is mentioned in the paper, but not apparent from the raw data file. Differences in confidence intervals for all other conditions are unexplained.
+This reproducibility check was a failure, as it contained two Major Numerical Errors, an Insufficient Information Error and numerous Minor Numerical Errors. The insufficient information error refers to the fact that the text indicates that one participant in Experiment 6 was excluded, but does not give enough information to remove this person from the analyses. The differences in means for the poor_large condition, as well as differences in numerical values obtained in the 2x2 ANOVA, are likely due to the exclusion of this participant which is mentioned in the paper, but not apparent from the raw data file. Differences in confidence intervals for all other conditions are unexplained.
 
 
 ```{r session_info, include=TRUE, echo=TRUE, results='markup'}
