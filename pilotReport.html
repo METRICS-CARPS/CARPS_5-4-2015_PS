@@ -314,10 +314,10 @@ head(summary)</code></pre>
 ## # Groups:   Cond [4]
 ##         Cond ci_lower ci_upper     mean
 ##        &lt;chr&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
-## 1 poor_large 8.105263 9.736842 8.947368
-## 2 poor_small 7.142857 9.380952 8.333333
-## 3 rich_large 5.500000 7.556944 6.500000
-## 4 rich_small 7.875000 8.875000 8.312500</code></pre>
+## 1 poor_large 8.156579 9.738158 8.947368
+## 2 poor_small 7.142857 9.428571 8.333333
+## 3 rich_large 5.444444 7.500000 6.500000
+## 4 rich_small 7.812500 8.937500 8.312500</code></pre>
 <pre class="r"><code>compareValues(8.83, 8.947368)#Comparing the means in the poor_large condition</code></pre>
 <pre><code>## [1] &quot;MINOR NUMERICAL ERROR. The reported value (8.83) and the obtained value (8.95) differed by 1.36%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
 <pre class="r"><code>compareValues(7.97, 8.046035)#lower 95% Confidence Interval Limit in the poor_large condition</code></pre>
@@ -363,7 +363,8 @@ head(summary)</code></pre>
 ## sample estimates:
 ## mean of x mean of y 
 ##    8.3125    6.5000</code></pre>
-<pre class="r"><code>aov_BudgetAccount &lt;- aov_ez(id = &quot;Subject&quot;, dv = &quot;expense&quot;, data = d1, between = c(&quot;budget&quot;, &quot;account&quot;), anova_table = list(es = &quot;pes&quot;))
+<pre class="r"><code>#Main inferential analysis: a 2x2 ANOVA with 2 between subjects factors, account and budget
+aov_BudgetAccount &lt;- aov_ez(id = &quot;Subject&quot;, dv = &quot;expense&quot;, data = d1, between = c(&quot;budget&quot;, &quot;account&quot;), anova_table = list(es = &quot;pes&quot;))
 summary(aov_BudgetAccount)</code></pre>
 <pre><code>## Anova Table (Type 3 tests)
 ## 
@@ -412,7 +413,7 @@ summary(aov_BudgetAccount)</code></pre>
 </tr>
 </tbody>
 </table>
-<p>This reproducibility check was a failure, as it contained two Major Numerical Errors, an Insufficient Information Error and numerous Minor Numerical Errors. The differences in means for the poor_large condition, as well as differences in numerical values obtained in the 2x2 ANOVA, are likely due to the exclusion of a participant which is mentioned in the paper, but not apparent from the raw data file. Differences in confidence intervals for all other conditions are unexplained.</p>
+<p>This reproducibility check was a failure, as it contained two Major Numerical Errors, an Insufficient Information Error and numerous Minor Numerical Errors. The insufficient information error refers to the fact that the text indicates that one participant in Experiment 6 was excluded, but does not give enough information to remove this person from the analyses. The differences in means for the poor_large condition, as well as differences in numerical values obtained in the 2x2 ANOVA, are likely due to the exclusion of this participant which is mentioned in the paper, but not apparent from the raw data file. Differences in confidence intervals for all other conditions are unexplained.</p>
 <pre class="r"><code>devtools::session_info()</code></pre>
 <pre><code>##  setting  value                       
 ##  version  R version 3.4.2 (2017-09-28)
