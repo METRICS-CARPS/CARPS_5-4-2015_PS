@@ -1,0 +1,229 @@
+---
+title: "CARPS Reproducibility Report"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+---
+
+```{r}
+articleID <- "5-4-2015_PS" # insert the article ID code here e.g., "10-3-2015_PS"
+reportType <- 'pilot'
+pilotNames <- "Benjamin deMayo, Katherine Hermann" # insert the pilot's name here e.g., "Tom Hardwicke". If there are multiple pilots enter both names in a character string e.g., "Tom Hardwicke, Bob Dylan"
+copilotNames <- "Emily Hembacher" # insert the co-pilot's name here e.g., "Michael Frank". If there are multiple co-pilots enter both names in a character string e.g., "Tom Hardwicke, Bob Dylan"
+pilotTTC <- 240 # insert the pilot's estimated time to complete (in minutes, fine to approximate) e.g., 120
+copilotTTC <- NA # insert the co- pilot's estimated time to complete (in minutes, fine to approximate) e.g., 120
+pilotStartDate <- as.Date("11/05/17", format = "%m/%d/%y") # insert the pilot's start date in US format e.g., as.Date("01/25/18", format = "%m/%d/%y")
+copilotStartDate <- as.Date("", format = "%m/%d/%y") # insert the co-pilot's start date in US format e.g., as.Date("01/25/18", format = "%m/%d/%y")
+completionDate <- as.Date("", format = "%m/%d/%y") # copilot insert the date of final report completion (after any necessary rounds of author assistance) in US format e.g., as.Date("01/25/18", format = "%m/%d/%y")
+```
+
+-------
+
+#### Methods summary: 
+This is an analytic reproduction of Experiment 6 in Shah, Shafir & Mullainathan (2015) in Psychological Science. The authors were interested in the effect of scarcity on people's consistency of valuation judgments. In this study, participants played a game of Family Feud and were given either 75 s (budget - "poor" condition) or 250 s (budget - "rich" condition) to complete the game. After playing the game, participants were either primed to think about a small account of time necessary to play one round of the game (account -"small" condition) or a large account (their overall time budget to play the entire game, account - "large" condition.) Participants rated how costly it would feel to lose 10s of time to play the game. The researchers were primarily interested in an interaction between the between-subjects factors of scarcity and account, hypothesizing that those in the budget - "poor" condition would be more consistent in their valuation of the 10s regardless of account in comparison with those in the budget - "rich" condition. The authors tested this hypothesis with a 2x2 between-subjects ANOVA.
+
+------
+
+#### Target outcomes: 
+> "One participant was excluded because of a computer
+malfunction during the game. Time-rich participants
+rated the loss as more expensive when they thought
+about a small account (M = 8.31, 95% CI = [7.78, 8.84])
+than when they thought about a large account (M = 6.50,
+95% CI = [5.42, 7.58]), whereas time-poor participants’
+evaluations did not differ between the small-account
+condition (M = 8.33, 95% CI = [7.14, 9.52]) and the large account
+condition (M = 8.83, 95% CI = [7.97, 9.69]). A 2
+(scarcity condition) × 2 (account condition) analysis of
+variance revealed a significant interaction, F(1, 69) = 5.16,
+p < .05, ηp2 = .07." (Shah, Shafir & Mullainathan, 2015)
+------
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+## Step 1: Load packages
+
+```{r}
+library(tidyverse) # for data munging
+library(knitr) # for kable table formating
+library(haven) # import and export 'SPSS', 'Stata' and 'SAS' Files
+library(readxl) # import excel files
+library(CARPSreports) # custom report functions
+library(afex) #anova functions
+library(langcog) #95 percent confidence intervals
+```
+
+```{r}
+# Prepare report object. This will be updated automatically by the reproCheck function each time values are compared.
+reportObject <- data.frame(dummyRow = TRUE, reportedValue = NA, obtainedValue = NA, valueType = NA, percentageError = NA, comparisonOutcome = NA, eyeballCheck = NA)
+```
+
+## Step 2: Load data
+
+```{r}
+data <- read_excel("data/study 6-accessible-feud.xlsx")
+```
+
+## Step 3: Tidy data
+
+The data are already tidy as provided by the authors.
+
+## Step 4: Run analysis
+
+### Pre-processing
+
+```{r}
+#select the relevant data columns
+d1 <- data %>%
+  select(Subject, Cond, Slack, Large, expense) %>%
+  dplyr::rename(budget = Slack, account = Large)
+  
+
+#rename data entries to make them more descriptive
+d1$budget <- d1$budget %>%
+                    recode('0' = "poor", '1' = "rich")
+
+d1$account <- d1$account %>%
+                    recode('0' = "small", '1' = "large")
+
+d1$Cond <- d1$Cond %>%
+                    recode('0' = "poor_small",
+                           '2' = "poor_large",
+                           '1' = "rich_small",
+                           '3' = "rich_large")
+```
+
+### Descriptive statistics
+
+>Time-rich participants rated the loss as more expensive when they thought about a small account (M = 8.31, 95% CI = [7.78, 8.84]) than when they thought about a large account (M = 6.50, 95% CI = [5.42, 7.58]), whereas time-poor participants’ evaluations did not differ between the small-account condition (M = 8.33, 95% CI = [7.14, 9.52]) and the large- account condition (M = 8.83, 95% CI = [7.97, 9.69]). (Shah, Shafir, & Mullainathan, 2015, p. 408)
+
+We observe minor errors but no major errors in the descriptive statistics.
+
+```{r}
+#Summary table of means and confidence intervals
+summary <- d1 %>%
+  group_by(Cond) %>%
+  multi_boot_standard(col = "expense")
+
+mean_rich_small <- summary$mean[4]
+lower_ci_rich_small <- summary$ci_lower[4]
+upper_ci_rich_small <- summary$ci_upper[4]
+
+mean_rich_large <- summary$mean[3]
+lower_ci_rich_large <- summary$ci_lower[3]
+upper_ci_rich_large <- summary$ci_upper[3]
+
+mean_poor_small <- summary$mean[2]
+lower_ci_poor_small <- summary$ci_lower[2]
+upper_ci_poor_small <- summary$ci_upper[2]
+
+mean_poor_large <- summary$mean[1]
+lower_ci_poor_large <- summary$ci_lower[1]
+upper_ci_poor_large <- summary$ci_upper[1]
+
+#time rich - small account
+reportObject <- reproCheck(reportedValue = "8.31", obtainedValue = mean_rich_small, valueType = 'mean')
+reportObject <- reproCheck(reportedValue = "7.78", obtainedValue = lower_ci_rich_small, valueType = 'ci')#lower ci
+reportObject <- reproCheck(reportedValue = "8.84", obtainedValue = upper_ci_rich_small, valueType = 'ci')#upper ci
+
+#time rich - large account
+reportObject <- reproCheck(reportedValue = "6.50", obtainedValue = mean_rich_large, valueType = 'mean')
+reportObject <- reproCheck(reportedValue = "5.42", obtainedValue = lower_ci_rich_large, valueType = 'ci')#lower ci
+reportObject <- reproCheck(reportedValue = "7.58", obtainedValue = upper_ci_rich_large, valueType = 'ci')#upper ci
+
+#time poor - small account
+reportObject <- reproCheck(reportedValue = "8.33", obtainedValue = mean_poor_small, valueType = 'mean')
+reportObject <- reproCheck(reportedValue = "7.14", obtainedValue = lower_ci_poor_small, valueType = 'ci')#lower ci
+reportObject <- reproCheck(reportedValue = "9.52", obtainedValue = upper_ci_poor_small, valueType = 'ci')#upper ci
+
+#time poor - large account
+#here there is a mis-match for the mean- is there a missing/extra participant?
+reportObject <- reproCheck(reportedValue = "8.83", obtainedValue = mean_poor_large, valueType = 'mean')
+reportObject <- reproCheck(reportedValue = "7.97", obtainedValue = lower_ci_poor_large, valueType = 'ci')#lower ci
+reportObject <- reproCheck(reportedValue = "9.69", obtainedValue = upper_ci_poor_large, valueType = 'ci')#upper ci
+```
+
+### Inferential statistics
+
+>A 2 (scarcity condition) × 2 (account condition) analysis of variance revealed a significant interaction, F(1, 69) = 5.16, p < .05, ηp2 = .07.
+
+```{r}
+#Main inferential analysis: a 2x2 ANOVA with 2 between subjects factors, account and budget
+aov_BudgetAccount <- aov_ez(id = "Subject", dv = "expense", data = d1, between = c("budget", "account"), anova_table = list(es = "pes"))
+summary(aov_BudgetAccount)
+
+df_budget_account <- aov_BudgetAccount$anova_table$`den Df`[3]
+F_budget_account <- aov_BudgetAccount$anova_table$F[3]
+pes_budget_account <- aov_BudgetAccount$anova_table$pes[3]
+
+reportObject <- reproCheck(reportedValue = "69", obtainedValue = df_budget_account, valueType = 'df') #degrees of freedom
+reportObject <- reproCheck(reportedValue = "5.76", obtainedValue = F_budget_account, valueType = 'F') #F-statistic
+reportObject <- reproCheck(reportedValue = ".07", obtainedValue = pes_budget_account, valueType = 'pes') #partial effect size
+```
+
+## Step 5: Conclusion
+
+This reproducibility check was a failure, as it contained two Major Numerical Errors, an Insufficient Information Error and numerous Minor Numerical Errors. The insufficient information error refers to the fact that the text indicates that one participant in Experiment 6 was excluded, but does not give enough information to remove this person from the analyses. The differences in means for the poor_large condition, as well as differences in numerical values obtained in the 2x2 ANOVA, are likely due to the exclusion of this participant which is mentioned in the paper, but not apparent from the raw data file. Differences in confidence intervals for all other conditions are unexplained.
+
+
+```{r}
+Author_Assistance = FALSE # was author assistance provided? (if so, enter TRUE)
+
+Insufficient_Information_Errors <- 1 # how many discrete insufficient information issues did you encounter?
+
+# Assess the causal locus (discrete reproducibility issues) of any reproducibility errors. Note that there doesn't necessarily have to be a one-to-one correspondance between discrete reproducibility issues and reproducibility errors. For example, it could be that the original article neglects to mention that a Greenhouse-Geisser correct was applied to ANOVA outcomes. This might result in multiple reproducibility errors, but there is a single causal locus (discrete reproducibility issue).
+
+locus_typo <- NA # how many discrete issues did you encounter that related to typographical errors?
+locus_specification <- NA # how many discrete issues did you encounter that related to incomplete, incorrect, or unclear specification of the original analyses?
+locus_analysis <- NA # how many discrete issues did you encounter that related to errors in the authors' original analyses?
+locus_data <- NA # how many discrete issues did you encounter that related to errors in the data files shared by the authors?
+locus_unidentified <- NA # how many discrete issues were there for which you could not identify the cause
+
+Affects_Conclusion <- NA # Do any reproducibility issues encounter appear to affect the conclusions made in the original article? This is a subjective judgement, but you should taking into account multiple factors, such as the presence/absence of decision errors, the number of target outcomes that could not be reproduced, the type of outcomes that could or could not be reproduced, the difference in magnitude of effect sizes, and the predictions of the specific hypothesis under scrutiny.
+```
+
+```{r}
+reportObject <- reportObject %>%
+  filter(dummyRow == FALSE) %>% # remove the dummy row
+  select(-dummyRow) %>% # remove dummy row designation
+  mutate(articleID = articleID) %>% # add the articleID 
+  select(articleID, everything()) # make articleID first column
+
+# decide on final outcome
+if(any(reportObject$comparisonOutcome != "MATCH") | Insufficient_Information_Errors > 0){
+  finalOutcome <- "Failure without author assistance"
+  if(Author_Assistance == T){
+    finalOutcome <- "Failure despite author assistance"
+  }
+}else{
+  finalOutcome <- "Success without author assistance"
+  if(Author_Assistance == T){
+    finalOutcome <- "Success with author assistance"
+  }
+}
+
+# collate report extra details
+reportExtras <- data.frame(articleID, pilotNames, copilotNames, pilotTTC, copilotTTC, pilotStartDate, copilotStartDate, completionDate, Author_Assistance, finalOutcome, Insufficient_Information_Errors, locus_typo, locus_specification, locus_analysis, locus_data, locus_unidentified)
+
+# save report objects
+if(reportType == "pilot"){
+  write_csv(reportObject, "pilotReportDetailed.csv")
+  write_csv(reportExtras, "pilotReportExtras.csv")
+}
+
+if(reportType == "final"){
+  write_csv(reportObject, "finalReportDetailed.csv")
+  write_csv(reportExtras, "finalReportExtras.csv")
+}
+```
+
+# Session information
+
+```{r session_info, include=TRUE, echo=TRUE, results='markup'}
+devtools::session_info()
+```
