@@ -10,13 +10,13 @@ output:
 
 ```{r}
 articleID <- "5-4-2015_PS" # insert the article ID code here e.g., "10-3-2015_PS"
-reportType <- 'pilot'
+reportType <- 'final'
 pilotNames <- "Benjamin deMayo, Katherine Hermann" # insert the pilot's name here e.g., "Tom Hardwicke". If there are multiple pilots enter both names in a character string e.g., "Tom Hardwicke, Bob Dylan"
 copilotNames <- "Emily Hembacher" # insert the co-pilot's name here e.g., "Michael Frank". If there are multiple co-pilots enter both names in a character string e.g., "Tom Hardwicke, Bob Dylan"
 pilotTTC <- 240 # insert the pilot's estimated time to complete (in minutes, fine to approximate) e.g., 120
-copilotTTC <- NA # insert the co- pilot's estimated time to complete (in minutes, fine to approximate) e.g., 120
+copilotTTC <- 120 # insert the co- pilot's estimated time to complete (in minutes, fine to approximate) e.g., 120
 pilotStartDate <- as.Date("11/05/17", format = "%m/%d/%y") # insert the pilot's start date in US format e.g., as.Date("01/25/18", format = "%m/%d/%y")
-copilotStartDate <- as.Date("", format = "%m/%d/%y") # insert the co-pilot's start date in US format e.g., as.Date("01/25/18", format = "%m/%d/%y")
+copilotStartDate <- as.Date("06/14/18", format = "%m/%d/%y") # insert the co-pilot's start date in US format e.g., as.Date("01/25/18", format = "%m/%d/%y")
 completionDate <- as.Date("", format = "%m/%d/%y") # copilot insert the date of final report completion (after any necessary rounds of author assistance) in US format e.g., as.Date("01/25/18", format = "%m/%d/%y")
 ```
 
@@ -82,7 +82,6 @@ The data are already tidy as provided by the authors.
 d1 <- data %>%
   select(Subject, Cond, Slack, Large, expense) %>%
   dplyr::rename(budget = Slack, account = Large)
-  
 
 #rename data entries to make them more descriptive
 d1$budget <- d1$budget %>%
@@ -102,14 +101,13 @@ d1$Cond <- d1$Cond %>%
 
 >Time-rich participants rated the loss as more expensive when they thought about a small account (M = 8.31, 95% CI = [7.78, 8.84]) than when they thought about a large account (M = 6.50, 95% CI = [5.42, 7.58]), whereas time-poor participants’ evaluations did not differ between the small-account condition (M = 8.33, 95% CI = [7.14, 9.52]) and the large- account condition (M = 8.83, 95% CI = [7.97, 9.69]). (Shah, Shafir, & Mullainathan, 2015, p. 408)
 
-We observe minor errors but no major errors in the descriptive statistics.
-
 ```{r}
 #Summary table of means and confidence intervals
 summary <- d1 %>%
   group_by(Cond) %>%
   multi_boot_standard(col = "expense")
 
+#store mean and CI values for comparison to reported values
 mean_rich_small <- summary$mean[4]
 lower_ci_rich_small <- summary$ci_lower[4]
 upper_ci_rich_small <- summary$ci_upper[4]
@@ -125,6 +123,10 @@ upper_ci_poor_small <- summary$ci_upper[2]
 mean_poor_large <- summary$mean[1]
 lower_ci_poor_large <- summary$ci_lower[1]
 upper_ci_poor_large <- summary$ci_upper[1]
+```
+
+```{r}
+#compare reported values of means and CIs to obtained values.
 
 #time rich - small account
 reportObject <- reproCheck(reportedValue = "8.31", obtainedValue = mean_rich_small, valueType = 'mean')
@@ -142,7 +144,7 @@ reportObject <- reproCheck(reportedValue = "7.14", obtainedValue = lower_ci_poor
 reportObject <- reproCheck(reportedValue = "9.52", obtainedValue = upper_ci_poor_small, valueType = 'ci')#upper ci
 
 #time poor - large account
-#here there is a mis-match for the mean- is there a missing/extra participant?
+#here there is a mis-match for the mean- this might be the condition with the excluded participant.
 reportObject <- reproCheck(reportedValue = "8.83", obtainedValue = mean_poor_large, valueType = 'mean')
 reportObject <- reproCheck(reportedValue = "7.97", obtainedValue = lower_ci_poor_large, valueType = 'ci')#lower ci
 reportObject <- reproCheck(reportedValue = "9.69", obtainedValue = upper_ci_poor_large, valueType = 'ci')#upper ci
@@ -153,23 +155,23 @@ reportObject <- reproCheck(reportedValue = "9.69", obtainedValue = upper_ci_poor
 >A 2 (scarcity condition) × 2 (account condition) analysis of variance revealed a significant interaction, F(1, 69) = 5.16, p < .05, ηp2 = .07.
 
 ```{r}
-#Main inferential analysis: a 2x2 ANOVA with 2 between subjects factors, account and budget
 aov_BudgetAccount <- aov_ez(id = "Subject", dv = "expense", data = d1, between = c("budget", "account"), anova_table = list(es = "pes"))
 summary(aov_BudgetAccount)
 
 df_budget_account <- aov_BudgetAccount$anova_table$`den Df`[3]
 F_budget_account <- aov_BudgetAccount$anova_table$F[3]
 pes_budget_account <- aov_BudgetAccount$anova_table$pes[3]
+p_budget_account <- aov_BudgetAccount$anova_table$`Pr(>F)`[3]
 
 reportObject <- reproCheck(reportedValue = "69", obtainedValue = df_budget_account, valueType = 'df') #degrees of freedom
-reportObject <- reproCheck(reportedValue = "5.76", obtainedValue = F_budget_account, valueType = 'F') #F-statistic
-reportObject <- reproCheck(reportedValue = ".07", obtainedValue = pes_budget_account, valueType = 'pes') #partial effect size
+reportObject <- reproCheck(reportedValue = "5.16", obtainedValue = F_budget_account, valueType = 'F') #F-statistic
+reportObject <- reproCheck(reportedValue = ".07", obtainedValue = pes_budget_account, valueType = 'pes') #partial eta 
+reportObject <- reproCheck(reportedValue = "<.05", obtainedValue = .01902, valueType = 'pes', eyeballCheck = TRUE) #p value
 ```
 
 ## Step 5: Conclusion
 
-This reproducibility check was a failure, as it contained two Major Numerical Errors, an Insufficient Information Error and numerous Minor Numerical Errors. The insufficient information error refers to the fact that the text indicates that one participant in Experiment 6 was excluded, but does not give enough information to remove this person from the analyses. The differences in means for the poor_large condition, as well as differences in numerical values obtained in the 2x2 ANOVA, are likely due to the exclusion of this participant which is mentioned in the paper, but not apparent from the raw data file. Differences in confidence intervals for all other conditions are unexplained.
-
+We encountered some discrepencies between the reported findings and our own obtained values. We found major errors in F statistic and effect size statistic (partial eta squared) for the ANOVA. While the authors noted in the text that one participant was removed from analyses due to a computer error, it was not clear from the data file which participant was removed. This amounts to an insufficient information error. We suspect that this lead to the major errors in F and PES, a minor error in the mean for one condition (time poor - large account), and a minor error in degrees of freedom in the ANOVA. There were also minor errors in the confidence intervals around the condition means, which could possibly be due to differences in the calculation of CIs across packages.
 
 ```{r}
 Author_Assistance = FALSE # was author assistance provided? (if so, enter TRUE)
