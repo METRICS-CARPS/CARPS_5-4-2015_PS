@@ -166,7 +166,7 @@ p_budget_account <- aov_BudgetAccount$anova_table$`Pr(>F)`[3]
 reportObject <- reproCheck(reportedValue = "69", obtainedValue = df_budget_account, valueType = 'df') #degrees of freedom
 reportObject <- reproCheck(reportedValue = "5.16", obtainedValue = F_budget_account, valueType = 'F') #F-statistic
 reportObject <- reproCheck(reportedValue = ".07", obtainedValue = pes_budget_account, valueType = 'pes') #partial eta 
-reportObject <- reproCheck(reportedValue = "<.05", obtainedValue = .01902, valueType = 'pes', eyeballCheck = TRUE) #p value
+reportObject <- reproCheck(reportedValue = "<.05", obtainedValue = .01902, valueType = 'p', eyeballCheck = TRUE) #p value
 ```
 
 ## Step 5: Conclusion
