@@ -63,19 +63,19 @@ library(langcog) #95 percent confidence intervals
 reportObject <- data.frame(dummyRow = TRUE, reportedValue = NA, obtainedValue = NA, valueType = NA, percentageError = NA, comparisonOutcome = NA, eyeballCheck = NA)
 ```
 
-## Step 2: Load data
+# Step 2: Load data
 
 ```{r}
 data <- read_excel("data/study 6-accessible-feud.xlsx")
 ```
 
-## Step 3: Tidy data
+# Step 3: Tidy data
 
 The data are already tidy as provided by the authors.
 
-## Step 4: Run analysis
+# Step 4: Run analysis
 
-### Pre-processing
+## Pre-processing
 
 ```{r}
 #select the relevant data columns
@@ -97,7 +97,7 @@ d1$Cond <- d1$Cond %>%
                            '3' = "rich_large")
 ```
 
-### Descriptive statistics
+## Descriptive statistics
 
 >Time-rich participants rated the loss as more expensive when they thought about a small account (M = 8.31, 95% CI = [7.78, 8.84]) than when they thought about a large account (M = 6.50, 95% CI = [5.42, 7.58]), whereas time-poor participants’ evaluations did not differ between the small-account condition (M = 8.33, 95% CI = [7.14, 9.52]) and the large- account condition (M = 8.83, 95% CI = [7.97, 9.69]). (Shah, Shafir, & Mullainathan, 2015, p. 408)
 
@@ -150,7 +150,7 @@ reportObject <- reproCheck(reportedValue = "7.97", obtainedValue = lower_ci_poor
 reportObject <- reproCheck(reportedValue = "9.69", obtainedValue = upper_ci_poor_large, valueType = 'ci')#upper ci
 ```
 
-### Inferential statistics
+## Inferential statistics
 
 >A 2 (scarcity condition) × 2 (account condition) analysis of variance revealed a significant interaction, F(1, 69) = 5.16, p < .05, ηp2 = .07.
 
@@ -169,7 +169,7 @@ reportObject <- reproCheck(reportedValue = ".07", obtainedValue = pes_budget_acc
 reportObject <- reproCheck(reportedValue = "<.05", obtainedValue = .01902, valueType = 'p', eyeballCheck = TRUE) #p value
 ```
 
-## Step 5: Conclusion
+# Step 5: Conclusion
 
 We encountered some discrepencies between the reported findings and our own obtained values. We found major errors in F statistic and effect size statistic (partial eta squared) for the ANOVA. While the authors noted in the text that one participant was removed from analyses due to a computer error, it was not clear from the data file which participant was removed. This amounts to an insufficient information error. We suspect that this lead to the major errors in F and PES, a minor error in the mean for one condition (time poor - large account), and a minor error in degrees of freedom in the ANOVA. There were also minor errors in the confidence intervals around the condition means, which could possibly be due to differences in the calculation of CIs across packages.
 
