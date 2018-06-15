@@ -77,11 +77,17 @@ The data are already tidy as provided by the authors.
 
 ### Pre-processing
 
+>One participant was excluded because of a computer
+malfunction during the game (Shah, Shafir, & Mullainathan, 2015, p. 408)
+
 ```{r}
-#select the relevant data columns
+#data exclusion-- per author communication, subject #16 should be dropped from analyses
+excluded <- "16"
+
 d1 <- data %>%
-  select(Subject, Cond, Slack, Large, expense) %>%
-  dplyr::rename(budget = Slack, account = Large)
+  filter(!Subject %in% excluded)%>% #participant exclusions
+  select(Subject, Cond, Slack, Large, expense) %>% #select relevant data columns
+  dplyr::rename(budget = Slack, account = Large) #rename columns to be more descriptive
 
 #rename data entries to make them more descriptive
 d1$budget <- d1$budget %>%
@@ -144,7 +150,6 @@ reportObject <- reproCheck(reportedValue = "7.14", obtainedValue = lower_ci_poor
 reportObject <- reproCheck(reportedValue = "9.52", obtainedValue = upper_ci_poor_small, valueType = 'ci')#upper ci
 
 #time poor - large account
-#here there is a mis-match for the mean- this might be the condition with the excluded participant.
 reportObject <- reproCheck(reportedValue = "8.83", obtainedValue = mean_poor_large, valueType = 'mean')
 reportObject <- reproCheck(reportedValue = "7.97", obtainedValue = lower_ci_poor_large, valueType = 'ci')#lower ci
 reportObject <- reproCheck(reportedValue = "9.69", obtainedValue = upper_ci_poor_large, valueType = 'ci')#upper ci
@@ -171,10 +176,10 @@ reportObject <- reproCheck(reportedValue = "<.05", obtainedValue = .01902, value
 
 ## Step 5: Conclusion
 
-We encountered some discrepencies between the reported findings and our own obtained values. We found major errors in F statistic and effect size statistic (partial eta squared) for the ANOVA. While the authors noted in the text that one participant was removed from analyses due to a computer error, it was not clear from the data file which participant was removed. This amounts to an insufficient information error. We suspect that this lead to the major errors in F and PES, a minor error in the mean for one condition (time poor - large account), and a minor error in degrees of freedom in the ANOVA. There were also minor errors in the confidence intervals around the condition means, which could possibly be due to differences in the calculation of CIs across packages.
+Although it was specified in the paper that one participant was dropped from analyses due to a computer malfunction, the data files provided online did not specify which participant was dropped. Thus, prior to communication with the author, we were not able to reproduce the key outcomes. Once the author communicated to us which participant should be dropped, we were able to reproduce all target outcomes, with only minor errors in the confidence intervals around the condition means. This could be due to different software packages producing different confidence interval estimates.
 
 ```{r}
-Author_Assistance = FALSE # was author assistance provided? (if so, enter TRUE)
+Author_Assistance = TRUE # was author assistance provided? (if so, enter TRUE)
 
 Insufficient_Information_Errors <- 1 # how many discrete insufficient information issues did you encounter?
 
