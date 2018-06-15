@@ -225,10 +225,10 @@ reportType &lt;- 'final'
 pilotNames &lt;- &quot;Benjamin deMayo, Katherine Hermann&quot; # insert the pilot's name here e.g., &quot;Tom Hardwicke&quot;. If there are multiple pilots enter both names in a character string e.g., &quot;Tom Hardwicke, Bob Dylan&quot;
 copilotNames &lt;- &quot;Emily Hembacher&quot; # insert the co-pilot's name here e.g., &quot;Michael Frank&quot;. If there are multiple co-pilots enter both names in a character string e.g., &quot;Tom Hardwicke, Bob Dylan&quot;
 pilotTTC &lt;- 240 # insert the pilot's estimated time to complete (in minutes, fine to approximate) e.g., 120
-copilotTTC &lt;- 120 # insert the co- pilot's estimated time to complete (in minutes, fine to approximate) e.g., 120
+copilotTTC &lt;- 150 # insert the co- pilot's estimated time to complete (in minutes, fine to approximate) e.g., 120
 pilotStartDate &lt;- as.Date(&quot;11/05/17&quot;, format = &quot;%m/%d/%y&quot;) # insert the pilot's start date in US format e.g., as.Date(&quot;01/25/18&quot;, format = &quot;%m/%d/%y&quot;)
 copilotStartDate &lt;- as.Date(&quot;06/14/18&quot;, format = &quot;%m/%d/%y&quot;) # insert the co-pilot's start date in US format e.g., as.Date(&quot;01/25/18&quot;, format = &quot;%m/%d/%y&quot;)
-completionDate &lt;- as.Date(&quot;&quot;, format = &quot;%m/%d/%y&quot;) # copilot insert the date of final report completion (after any necessary rounds of author assistance) in US format e.g., as.Date(&quot;01/25/18&quot;, format = &quot;%m/%d/%y&quot;)</code></pre>
+completionDate &lt;- as.Date(&quot;06/15/18&quot;, format = &quot;%m/%d/%y&quot;) # copilot insert the date of final report completion (after any necessary rounds of author assistance) in US format e.g., as.Date(&quot;01/25/18&quot;, format = &quot;%m/%d/%y&quot;)</code></pre>
 <hr />
 <div id="methods-summary" class="section level4">
 <h4>Methods summary:</h4>
@@ -253,22 +253,29 @@ library(langcog) #95 percent confidence intervals</code></pre>
 <pre class="r"><code># Prepare report object. This will be updated automatically by the reproCheck function each time values are compared.
 reportObject &lt;- data.frame(dummyRow = TRUE, reportedValue = NA, obtainedValue = NA, valueType = NA, percentageError = NA, comparisonOutcome = NA, eyeballCheck = NA)</code></pre>
 </div>
-<div id="step-2-load-data" class="section level2">
-<h2>Step 2: Load data</h2>
+<div id="step-2-load-data" class="section level1">
+<h1>Step 2: Load data</h1>
 <pre class="r"><code>data &lt;- read_excel(&quot;data/study 6-accessible-feud.xlsx&quot;)</code></pre>
 </div>
-<div id="step-3-tidy-data" class="section level2">
-<h2>Step 3: Tidy data</h2>
+<div id="step-3-tidy-data" class="section level1">
+<h1>Step 3: Tidy data</h1>
 <p>The data are already tidy as provided by the authors.</p>
 </div>
-<div id="step-4-run-analysis" class="section level2">
-<h2>Step 4: Run analysis</h2>
-<div id="pre-processing" class="section level3">
-<h3>Pre-processing</h3>
-<pre class="r"><code>#select the relevant data columns
+<div id="step-4-run-analysis" class="section level1">
+<h1>Step 4: Run analysis</h1>
+<div id="pre-processing" class="section level2">
+<h2>Pre-processing</h2>
+<blockquote>
+<p>One participant was excluded because of a computer malfunction during the game (Shah, Shafir, &amp; Mullainathan, 2015, p. 408)</p>
+</blockquote>
+<p>Initially we were not able to identify this participant in the data file and noted an Insufficient Information Error. However, we then contacted the authors and they informed us which participant needed to be excluded.</p>
+<pre class="r"><code>#data exclusion-- per author communication, subject #16 should be dropped from analyses
+excluded &lt;- &quot;16&quot;
+
 d1 &lt;- data %&gt;%
-  select(Subject, Cond, Slack, Large, expense) %&gt;%
-  dplyr::rename(budget = Slack, account = Large)
+  filter(!Subject %in% excluded)%&gt;% #participant exclusions
+  select(Subject, Cond, Slack, Large, expense) %&gt;% #select relevant data columns
+  dplyr::rename(budget = Slack, account = Large) #rename columns to be more descriptive
 
 #rename data entries to make them more descriptive
 d1$budget &lt;- d1$budget %&gt;%
@@ -283,8 +290,8 @@ d1$Cond &lt;- d1$Cond %&gt;%
                            '1' = &quot;rich_small&quot;,
                            '3' = &quot;rich_large&quot;)</code></pre>
 </div>
-<div id="descriptive-statistics" class="section level3">
-<h3>Descriptive statistics</h3>
+<div id="descriptive-statistics" class="section level2">
+<h2>Descriptive statistics</h2>
 <blockquote>
 <p>Time-rich participants rated the loss as more expensive when they thought about a small account (M = 8.31, 95% CI = [7.78, 8.84]) than when they thought about a large account (M = 6.50, 95% CI = [5.42, 7.58]), whereas time-poor participants’ evaluations did not differ between the small-account condition (M = 8.33, 95% CI = [7.14, 9.52]) and the large- account condition (M = 8.83, 95% CI = [7.97, 9.69]). (Shah, Shafir, &amp; Mullainathan, 2015, p. 408)</p>
 </blockquote>
@@ -322,9 +329,9 @@ reportObject &lt;- reproCheck(reportedValue = &quot;8.31&quot;, obtainedValue = 
 reportObject &lt;- reproCheck(reportedValue = &quot;6.50&quot;, obtainedValue = mean_rich_large, valueType = 'mean')</code></pre>
 <pre><code>## [1] &quot;MATCH for mean. The reported value (6.5) and the obtained value (6.5) differed by 0%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
 <pre class="r"><code>reportObject &lt;- reproCheck(reportedValue = &quot;5.42&quot;, obtainedValue = lower_ci_rich_large, valueType = 'ci')#lower ci</code></pre>
-<pre><code>## [1] &quot;MINOR_ERROR for ci. The reported value (5.42) and the obtained value (5.56) differed by 2.58%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MINOR_ERROR for ci. The reported value (5.42) and the obtained value (5.5) differed by 1.48%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
 <pre class="r"><code>reportObject &lt;- reproCheck(reportedValue = &quot;7.58&quot;, obtainedValue = upper_ci_rich_large, valueType = 'ci')#upper ci</code></pre>
-<pre><code>## [1] &quot;MINOR_ERROR for ci. The reported value (7.58) and the obtained value (7.5) differed by 1.06%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MINOR_ERROR for ci. The reported value (7.58) and the obtained value (7.56) differed by 0.26%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
 <pre class="r"><code>#time poor - small account
 reportObject &lt;- reproCheck(reportedValue = &quot;8.33&quot;, obtainedValue = mean_poor_small, valueType = 'mean')</code></pre>
 <pre><code>## [1] &quot;MATCH for mean. The reported value (8.33) and the obtained value (8.33) differed by 0%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
@@ -333,16 +340,15 @@ reportObject &lt;- reproCheck(reportedValue = &quot;8.33&quot;, obtainedValue = 
 <pre class="r"><code>reportObject &lt;- reproCheck(reportedValue = &quot;9.52&quot;, obtainedValue = upper_ci_poor_small, valueType = 'ci')#upper ci</code></pre>
 <pre><code>## [1] &quot;MINOR_ERROR for ci. The reported value (9.52) and the obtained value (9.48) differed by 0.42%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
 <pre class="r"><code>#time poor - large account
-#here there is a mis-match for the mean- this might be the condition with the excluded participant.
 reportObject &lt;- reproCheck(reportedValue = &quot;8.83&quot;, obtainedValue = mean_poor_large, valueType = 'mean')</code></pre>
-<pre><code>## [1] &quot;MINOR_ERROR for mean. The reported value (8.83) and the obtained value (8.95) differed by 1.36%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MATCH for mean. The reported value (8.83) and the obtained value (8.83) differed by 0%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
 <pre class="r"><code>reportObject &lt;- reproCheck(reportedValue = &quot;7.97&quot;, obtainedValue = lower_ci_poor_large, valueType = 'ci')#lower ci</code></pre>
-<pre><code>## [1] &quot;MINOR_ERROR for ci. The reported value (7.97) and the obtained value (8.16) differed by 2.38%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MINOR_ERROR for ci. The reported value (7.97) and the obtained value (8) differed by 0.38%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
 <pre class="r"><code>reportObject &lt;- reproCheck(reportedValue = &quot;9.69&quot;, obtainedValue = upper_ci_poor_large, valueType = 'ci')#upper ci</code></pre>
-<pre><code>## [1] &quot;MINOR_ERROR for ci. The reported value (9.69) and the obtained value (9.74) differed by 0.52%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MINOR_ERROR for ci. The reported value (9.69) and the obtained value (9.67) differed by 0.21%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
 </div>
-<div id="inferential-statistics" class="section level3">
-<h3>Inferential statistics</h3>
+<div id="inferential-statistics" class="section level2">
+<h2>Inferential statistics</h2>
 <blockquote>
 <p>A 2 (scarcity condition) × 2 (account condition) analysis of variance revealed a significant interaction, F(1, 69) = 5.16, p &lt; .05, ηp2 = .07.</p>
 </blockquote>
@@ -352,9 +358,9 @@ summary(aov_BudgetAccount)</code></pre>
 ## 
 ## Response: expense
 ##                num Df den Df    MSE      F      pes  Pr(&gt;F)  
-## budget              1     70 4.6793 5.9637 0.078507 0.01713 *
-## account             1     70 4.6793 1.4061 0.019691 0.23972  
-## budget:account      1     70 4.6793 5.7640 0.076079 0.01902 *
+## budget              1     69 4.6827 5.3498 0.071954 0.02371 *
+## account             1     69 4.6827 1.6629 0.023533 0.20152  
+## budget:account      1     69 4.6827 5.1621 0.069606 0.02621 *
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <pre class="r"><code>df_budget_account &lt;- aov_BudgetAccount$anova_table$`den Df`[3]
@@ -363,21 +369,21 @@ pes_budget_account &lt;- aov_BudgetAccount$anova_table$pes[3]
 p_budget_account &lt;- aov_BudgetAccount$anova_table$`Pr(&gt;F)`[3]
 
 reportObject &lt;- reproCheck(reportedValue = &quot;69&quot;, obtainedValue = df_budget_account, valueType = 'df') #degrees of freedom</code></pre>
-<pre><code>## [1] &quot;MINOR_ERROR for df. The reported value (69) and the obtained value (70) differed by 1.45%. NB obtained value was rounded to 0 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MATCH for df. The reported value (69) and the obtained value (69) differed by 0%. NB obtained value was rounded to 0 decimal places.&quot;</code></pre>
 <pre class="r"><code>reportObject &lt;- reproCheck(reportedValue = &quot;5.16&quot;, obtainedValue = F_budget_account, valueType = 'F') #F-statistic</code></pre>
-<pre><code>## [1] &quot;MAJOR_ERROR for F. The reported value (5.16) and the obtained value (5.76) differed by 11.63%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MATCH for F. The reported value (5.16) and the obtained value (5.16) differed by 0%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
 <pre class="r"><code>reportObject &lt;- reproCheck(reportedValue = &quot;.07&quot;, obtainedValue = pes_budget_account, valueType = 'pes') #partial eta </code></pre>
-<pre><code>## [1] &quot;MAJOR_ERROR for pes. The reported value (0.07) and the obtained value (0.08) differed by 14.29%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
+<pre><code>## [1] &quot;MATCH for pes. The reported value (0.07) and the obtained value (0.07) differed by 0%. NB obtained value was rounded to 2 decimal places.&quot;</code></pre>
 <pre class="r"><code>reportObject &lt;- reproCheck(reportedValue = &quot;&lt;.05&quot;, obtainedValue = .01902, valueType = 'p', eyeballCheck = TRUE) #p value</code></pre>
 <pre><code>## [1] &quot;MATCH for p. Eyeball comparison only.&quot;</code></pre>
 </div>
 </div>
-<div id="step-5-conclusion" class="section level2">
-<h2>Step 5: Conclusion</h2>
-<p>We encountered some discrepencies between the reported findings and our own obtained values. We found major errors in F statistic and effect size statistic (partial eta squared) for the ANOVA. While the authors noted in the text that one participant was removed from analyses due to a computer error, it was not clear from the data file which participant was removed. This amounts to an insufficient information error. We suspect that this lead to the major errors in F and PES, a minor error in the mean for one condition (time poor - large account), and a minor error in degrees of freedom in the ANOVA. There were also minor errors in the confidence intervals around the condition means, which could possibly be due to differences in the calculation of CIs across packages.</p>
-<pre class="r"><code>Author_Assistance = FALSE # was author assistance provided? (if so, enter TRUE)
+<div id="step-5-conclusion" class="section level1">
+<h1>Step 5: Conclusion</h1>
+<p>Although it was specified in the paper that one participant was dropped from analyses due to a computer malfunction, the data files provided online did not specify which participant was dropped. Thus, prior to communication with the author, we were not able to reproduce the key outcomes. Once the author communicated to us which participant should be dropped, we were able to reproduce all target outcomes, with only minor errors in the confidence intervals around the condition means. This could be due to different software packages producing different confidence interval estimates.</p>
+<pre class="r"><code>Author_Assistance = TRUE # was author assistance provided? (if so, enter TRUE)
 
-Insufficient_Information_Errors &lt;- 1 # how many discrete insufficient information issues did you encounter?
+Insufficient_Information_Errors &lt;- 0 # how many discrete insufficient information issues did you encounter?
 
 # Assess the causal locus (discrete reproducibility issues) of any reproducibility errors. Note that there doesn't necessarily have to be a one-to-one correspondance between discrete reproducibility issues and reproducibility errors. For example, it could be that the original article neglects to mention that a Greenhouse-Geisser correct was applied to ANOVA outcomes. This might result in multiple reproducibility errors, but there is a single causal locus (discrete reproducibility issue).
 
@@ -387,6 +393,13 @@ locus_analysis &lt;- NA # how many discrete issues did you encounter that relate
 locus_data &lt;- NA # how many discrete issues did you encounter that related to errors in the data files shared by the authors?
 locus_unidentified &lt;- NA # how many discrete issues were there for which you could not identify the cause
 
+locus_typo_resolved &lt;- 0 # how many discrete issues did you encounter that related to typographical errors?
+locus_specification_resolved &lt;- 1 # how many discrete issues did you encounter that related to incomplete, incorrect, or unclear specification of the original analyses?
+locus_analysis_resolved &lt;- 0 # how many discrete issues did you encounter that related to errors in the authors' original analyses?
+locus_data_resolved &lt;- 0 # how many discrete issues did you encounter that related to errors in the data files shared by the authors?
+locus_unidentified_resolved &lt;- 0 # how many discrete issues were there for which you could not identify the cause
+
+
 Affects_Conclusion &lt;- NA # Do any reproducibility issues encounter appear to affect the conclusions made in the original article? This is a subjective judgement, but you should taking into account multiple factors, such as the presence/absence of decision errors, the number of target outcomes that could not be reproduced, the type of outcomes that could or could not be reproduced, the difference in magnitude of effect sizes, and the predictions of the specific hypothesis under scrutiny.</code></pre>
 <pre class="r"><code>reportObject &lt;- reportObject %&gt;%
   filter(dummyRow == FALSE) %&gt;% # remove the dummy row
@@ -395,7 +408,7 @@ Affects_Conclusion &lt;- NA # Do any reproducibility issues encounter appear to 
   select(articleID, everything()) # make articleID first column
 
 # decide on final outcome
-if(any(reportObject$comparisonOutcome != &quot;MATCH&quot;) | Insufficient_Information_Errors &gt; 0){
+if(any(reportObject$comparisonOutcome %in% c(&quot;MAJOR_ERROR&quot;, &quot;DECISION_ERROR&quot;)) | Insufficient_Information_Errors &gt; 0){
   finalOutcome &lt;- &quot;Failure without author assistance&quot;
   if(Author_Assistance == T){
     finalOutcome &lt;- &quot;Failure despite author assistance&quot;
@@ -408,7 +421,7 @@ if(any(reportObject$comparisonOutcome != &quot;MATCH&quot;) | Insufficient_Infor
 }
 
 # collate report extra details
-reportExtras &lt;- data.frame(articleID, pilotNames, copilotNames, pilotTTC, copilotTTC, pilotStartDate, copilotStartDate, completionDate, Author_Assistance, finalOutcome, Insufficient_Information_Errors, locus_typo, locus_specification, locus_analysis, locus_data, locus_unidentified)
+reportExtras &lt;- data.frame(articleID, pilotNames, copilotNames, pilotTTC, copilotTTC, pilotStartDate, copilotStartDate, completionDate, Author_Assistance, finalOutcome, Insufficient_Information_Errors, locus_typo, locus_specification, locus_analysis, locus_data, locus_unidentified, locus_typo_resolved, locus_specification_resolved, locus_analysis_resolved, locus_data_resolved, locus_unidentified_resolved)
 
 # save report objects
 if(reportType == &quot;pilot&quot;){
@@ -431,7 +444,7 @@ if(reportType == &quot;final&quot;){
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Los_Angeles         
-##  date     2018-06-14                  
+##  date     2018-06-15                  
 ## 
 ##  package      * version  date      
 ##  acepack        1.4.1    2016-10-29
