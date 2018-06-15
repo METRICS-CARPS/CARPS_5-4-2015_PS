@@ -1,2 +1,2 @@
 articleID,pilotNames,copilotNames,pilotTTC,copilotTTC,pilotStartDate,copilotStartDate,completionDate,Author_Assistance,finalOutcome,Insufficient_Information_Errors,locus_typo,locus_specification,locus_analysis,locus_data,locus_unidentified
-9-2-2015_PS,"Benjamin deMayo, Katherine Hermann",Tom Hardwicke,240,NA,2017-11-05,NA,NA,FALSE,Failure without author assistance,1,NA,NA,NA,NA,NA
+5-4-2015_PS,"Benjamin deMayo, Katherine Hermann",Emily Hembacher,240,NA,2017-11-05,NA,NA,FALSE,Failure without author assistance,1,NA,NA,NA,NA,NA
